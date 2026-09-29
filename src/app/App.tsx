@@ -12,10 +12,11 @@ import { FocusScreen } from './screens/FocusScreen';
 import { SubjectDetailScreen, SubjectsScreen } from './screens/SubjectsScreen';
 import { TasksScreen } from './screens/TasksScreen';
 import { WorkScreen } from './screens/WorkScreen';
+import { FlashcardsScreen } from './screens/FlashcardsScreen';
+import { JourneyScreen } from './screens/JourneyScreen';
+import { NoteEditorScreen, NotesScreen } from './screens/NotesScreen';
+import { SearchScreen } from './screens/SearchScreen';
 
-// Routes are added to the navigation only once their screens exist.
-const AVAILABLE = ['/work', '/subjects', '/tasks', '/settings'];
-const navItems = NAV_ITEMS.filter((item) => AVAILABLE.includes(item.path));
 
 function NotFound() {
   return (
@@ -40,6 +41,16 @@ function Screen({ route }: { route: Route }) {
       return <SubjectDetailScreen id={route.id ?? ''} />;
     case 'focus':
       return <FocusScreen />;
+    case 'notes':
+      return <NotesScreen route={route} />;
+    case 'note':
+      return <NoteEditorScreen id={route.id ?? ''} />;
+    case 'flashcards':
+      return <FlashcardsScreen route={route} />;
+    case 'journey':
+      return <JourneyScreen />;
+    case 'search':
+      return <SearchScreen route={route} />;
     case 'settings':
       return <SettingsScreen route={route} />;
     default:
@@ -67,8 +78,8 @@ function Router() {
 
   if (route.name === 'setup') return <SetupScreen />;
   return (
-    <AppShell route={route} items={navItems} showSearch={false}>
-      <Screen route={route} />
+    <AppShell route={route} items={NAV_ITEMS}>
+      <Screen key={route.path} route={route} />
     </AppShell>
   );
 }

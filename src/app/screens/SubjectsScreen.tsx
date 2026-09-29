@@ -409,6 +409,25 @@ export function SubjectDetailScreen({ id }: { id: string }) {
             !addingTask && <EmptyState title="No tasks for this subject yet." />
           )}
         </section>
+
+        <section className="card" aria-labelledby="materials-heading">
+          <h2 id="materials-heading" className="card__title" style={{ marginBottom: '1rem' }}>
+            Notes and flashcards
+          </h2>
+          <ul className="materials-list">
+            <li>
+              <a href={`#/notes?new=1&ref=${encodeURIComponent(`${subject.id}|`)}`}>Write a note</a>
+              <span className="muted small"> · {data.notes.filter((n) => n.subjectId === subject.id).length} saved</span>
+            </li>
+            <li>
+              <a href={`#/flashcards?deck=${encodeURIComponent(`${subject.id}|`)}`}>Open flashcards</a>
+              <span className="muted small"> · {data.flashcards.filter((c) => c.subjectId === subject.id).length} cards</span>
+            </li>
+            <li>
+              <a href="#/journey">See the study journey</a>
+            </li>
+          </ul>
+        </section>
       </div>
 
       <ConfirmDialog

@@ -40,8 +40,13 @@ const STOPWORDS = new Set(
   ),
 );
 
+/** Splits into sentences, treating each line break as a boundary too (notes are often lists). */
 export function sentences(text: string): string[] {
-  return (text.replace(/\s+/g, ' ').match(/[^.!?]+[.!?]*/g) ?? []).map((s) => s.trim()).filter((s) => s.split(' ').length >= 3);
+  return text
+    .split(/\n+/)
+    .flatMap((line) => line.replace(/\s+/g, ' ').match(/[^.!?]+[.!?]*/g) ?? [])
+    .map((s) => s.trim())
+    .filter((s) => s.split(' ').length >= 3);
 }
 
 function chunks(text: string): string[] {
@@ -81,7 +86,8 @@ export function breakDown(ctx: ToolContext): string[] {
 }
 
 const DEFINITION_LINE = /^\s*(?:[-*•]\s*)?(.{2,80}?)\s*(?::|=|\s[-–—]\s)\s*(.{2,})$/;
-const IS_SENTENCE = /^(?:an?\s+|the\s+)?([A-Za-z][\w\s'()/-]{1,50}?)\s+(is|are|means|refers to|describes)\s+(.{6,})$/i;
+const TERM_SENTENCE = /^(?:an?|the)\s+([a-z][\w-]*(?:\s+[a-z][\w-]*){0,2}?)\s+(?:[a-z]+s)\s+.{8,}$/i;
+const IS_SENTENCE =/^(?:an?\s+|the\s+)?([A-Za-z][\w\s'()/-]{1,50}?)\s+(is|are|means|refers to|describes)\s+(.{6,})$/i;
 
 export function makeFlashcards(ctx: ToolContext): { front: string; back: string }[] {
   const cards: { front: string; back: string }[] = [];
@@ -101,7 +107,13 @@ export function makeFlashcards(ctx: ToolContext): { front: string; back: string 
     }
     for (const s of sentences(line)) {
       const m = s.match(IS_SENTENCE);
-      if (m && m[1].split(' ').length <= 6) cards.push({ front: `What ${m[2].toLowerCase() === 'are' ? 'are' : 'is'} ${m[1].trim()}?`, back: s });
+      if (m && m[1].split(' ').length <= 6) {
+        cards.push({ front: `What ${m[2].toLowerCase() === 'are' ? 'are' : 'is'} ${m[1].trim()}?`, back: s });
+        continue;
+      }
+      // "An inner join returns…" → term card whose back is the learner's own sentence.
+      const t = s.match(TERM_SENTENCE);
+      if (t) cards.push({ front: t[1].charAt(0).toUpperCase() + t[1].slice(1), back: s });
     }
   }
 

@@ -15,9 +15,12 @@ export function PageHeader({
   const ref = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     document.title = `${title} · NeuroNav`;
-    // Only move focus for in-app navigation, not the first page load.
-    if (document.body.dataset.navigated === 'true') ref.current?.focus({ preventScroll: false });
   }, [title]);
+  // Screens remount on navigation, so this runs once per page. Focus moves only
+  // for in-app navigation, not on first load.
+  useEffect(() => {
+    if (document.body.dataset.navigated === 'true') ref.current?.focus({ preventScroll: false });
+  }, []);
   return (
     <header className={hideTitle ? undefined : 'page-header'}>
       <div>

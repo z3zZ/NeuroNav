@@ -7,6 +7,8 @@ import { FocusSettings } from '../components/FocusSettings';
 import { FocusTimerCard } from '../components/FocusTimer';
 import { NextActionCard } from '../components/NextActionCard';
 import { PlanCard } from '../components/PlanCard';
+import { QuickActions } from '../components/QuickActions';
+import { JourneyCard } from './JourneyScreen';
 import { EmptyState, PageHeader } from '../components/primitives';
 import { SubjectCard } from '../components/SubjectCard';
 
@@ -53,7 +55,7 @@ function SubjectsCard() {
   );
 }
 
-export function WorkScreen({ extraMain, extraSide }: { extraMain?: ReactNode; extraSide?: ReactNode }) {
+export function WorkScreen() {
   const { data, update, loadProblem, backupKey, dismissLoadProblem } = useData();
   const { settings, setSetting } = useSettings();
   const simplified = settings.simplified;
@@ -96,8 +98,8 @@ export function WorkScreen({ extraMain, extraSide }: { extraMain?: ReactNode; ex
         {!simplified && (
           <>
             <SubjectsCard />
-            {extraMain}
-            {extraSide}
+            <JourneyCard />
+            <QuickActions />
             <section className="card area-settings" aria-labelledby="quick-settings-heading">
               <div className="card__header">
                 <h2 id="quick-settings-heading" className="card__title">

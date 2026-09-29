@@ -255,10 +255,10 @@ export function restoreDueDates(d: D, previous: Record<string, string>): D {
 
 // Notes ----------------------------------------------------------------------
 
-export function addNote(d: D, input: Partial<Pick<Note, 'title' | 'body' | 'subjectId' | 'topicId'>>): [D, Note] {
+export function addNote(d: D, input: Partial<Pick<Note, 'id' | 'title' | 'body' | 'subjectId' | 'topicId'>>): [D, Note] {
   const now = nowISO();
   const note: Note = {
-    id: uid(),
+    id: input.id ?? uid(),
     title: input.title ?? '',
     body: input.body ?? '',
     subjectId: input.subjectId ?? null,
