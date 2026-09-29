@@ -1,0 +1,8 @@
+/* Self-hosted so the app works offline and makes no third-party requests. */
+@import '@fontsource/cabin/400.css';
+@import '@fontsource/cabin/500.css';
+@import '@fontsource/cabin/600.css';
+@import '@fontsource/cabin/700.css';
+@import '@fontsource-variable/source-serif-4';
+@import '@fontsource/opendyslexic/400.css';
+@import '@fontsource/opendyslexic/700.css';

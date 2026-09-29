@@ -1,15 +1,31 @@
-
-  <!DOCTYPE html>
-  <html lang="en">
-    <head>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>Accessibility-Focused Exam Planner</title>
-    </head>
-
-    <body>
-      <div id="root"></div>
-      <script type="module" src="/src/main.tsx"></script>
-    </body>
-  </html>
-  
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="NeuroNav helps learners with ADHD start, sustain and finish useful revision sessions." />
+    <meta name="theme-color" content="#202A25" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <title>NeuroNav</title>
+    <script>
+      // Apply saved display settings before first paint to avoid a flash of the wrong theme.
+      (function () {
+        var s = {};
+        try { s = JSON.parse(localStorage.getItem('neuronav_settings_v2') || '{}') || {}; } catch (e) {}
+        var mq = function (q) { return window.matchMedia && window.matchMedia(q).matches; };
+        var r = document.documentElement.dataset;
+        r.theme = s.theme === 'dark' || (s.theme !== 'light' && mq('(prefers-color-scheme: dark)')) ? 'dark' : 'light';
+        r.contrast = s.contrast === 'high' || (s.contrast !== 'standard' && mq('(prefers-contrast: more)')) ? 'high' : 'standard';
+        r.motion = s.motion === 'reduced' || (s.motion !== 'full' && mq('(prefers-reduced-motion: reduce)')) ? 'reduced' : 'full';
+        if (s.font) r.font = s.font;
+        if (s.fontSize) r.size = s.fontSize;
+        if (s.spacing) r.spacing = s.spacing;
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>NeuroNav needs JavaScript to run.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

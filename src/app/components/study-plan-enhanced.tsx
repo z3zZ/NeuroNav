@@ -5,7 +5,6 @@ import {
   Clock,
   AlertCircle,
   Edit,
-  Repeat,
   Eye,
   List,
   Calendar as CalendarIcon,

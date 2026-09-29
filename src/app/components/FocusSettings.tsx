@@ -1,0 +1,35 @@
+import { useSettings } from '../state/settings';
+import { Switch } from './primitives';
+
+/** The four quick switches. Changes apply immediately and are saved. */
+export function FocusSettings() {
+  const { settings, effective, setSetting } = useSettings();
+  return (
+    <div>
+      <Switch
+        label="Reduced motion"
+        description="Removes animation and transitions."
+        checked={effective.reducedMotion}
+        onChange={(on) => setSetting('motion', on ? 'reduced' : 'full')}
+      />
+      <Switch
+        label="High contrast"
+        description="Black and white with stronger outlines. Hides photos."
+        checked={effective.highContrast}
+        onChange={(on) => setSetting('contrast', on ? 'high' : 'standard')}
+      />
+      <Switch
+        label="OpenDyslexic font"
+        description="Some people find it easier to read; others don’t."
+        checked={settings.font === 'dyslexia'}
+        onChange={(on) => setSetting('font', on ? 'dyslexia' : 'default')}
+      />
+      <Switch
+        label="Simplified mode"
+        description="Shows only your next action, plan and timer."
+        checked={settings.simplified}
+        onChange={(on) => setSetting('simplified', on)}
+      />
+    </div>
+  );
+}
