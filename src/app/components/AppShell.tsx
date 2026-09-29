@@ -36,9 +36,10 @@ export const NAV_ITEMS: NavItem[] = [
 
 export function BrandMark() {
   return (
-    <svg className="brand__mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
-      <rect width="32" height="32" rx="9" fill="#345E47" />
-      <path d="M9 22V10l7 8 7-8v12" fill="none" stroke="#F5F3ED" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+    <svg className="brand__mark" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+      <rect x="1" y="1" width="38" height="38" rx="12" fill="var(--accent)" stroke="var(--accent-ink)" strokeWidth="1" />
+      <path d="M12 29V12L28 28V11" fill="none" stroke="var(--accent-ink)" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="28" cy="11" r="3.6" fill="var(--accent-ink)" />
     </svg>
   );
 }

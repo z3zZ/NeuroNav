@@ -6,9 +6,10 @@ export interface Settings {
   fontSize: 'normal' | 'large' | 'xlarge';
   spacing: 'normal' | 'relaxed' | 'loose';
   font: 'default' | 'dyslexia' | 'mono';
-  contrast: 'system' | 'standard' | 'high';
+  contrast: 'system' | 'standard' | 'more' | 'high';
   motion: 'system' | 'reduced' | 'full';
-  theme: 'system' | 'light' | 'dark';
+  theme: 'system' | 'light' | 'dark' | 'ocean' | 'ink-light' | 'ink-dark';
+  background: 'auto' | 'daylight' | 'nightfall' | 'original';
   simplified: boolean;
   imagery: boolean;
   sound: boolean;
@@ -25,6 +26,7 @@ export const DEFAULT_SETTINGS: Settings = {
   contrast: 'system',
   motion: 'system',
   theme: 'system',
+  background: 'auto',
   simplified: false,
   imagery: true,
   // Silence by default; the learner opts in.
@@ -42,9 +44,10 @@ export function normaliseSettings(raw: unknown): Settings | null {
     fontSize: oneOf(raw.fontSize, ['normal', 'large', 'xlarge'] as const, d.fontSize),
     spacing: oneOf(raw.spacing, ['normal', 'relaxed', 'loose'] as const, d.spacing),
     font: oneOf(raw.font, ['default', 'dyslexia', 'mono'] as const, d.font),
-    contrast: oneOf(raw.contrast, ['system', 'standard', 'high'] as const, d.contrast),
+    contrast: oneOf(raw.contrast, ['system', 'standard', 'more', 'high'] as const, d.contrast),
     motion: oneOf(raw.motion, ['system', 'reduced', 'full'] as const, d.motion),
-    theme: oneOf(raw.theme, ['system', 'light', 'dark'] as const, d.theme),
+    theme: oneOf(raw.theme, ['system', 'light', 'dark', 'ocean', 'ink-light', 'ink-dark'] as const, d.theme),
+    background: oneOf(raw.background, ['auto', 'daylight', 'nightfall', 'original'] as const, d.background),
     simplified: asBoolean(raw.simplified, d.simplified),
     imagery: asBoolean(raw.imagery, d.imagery),
     sound: asBoolean(raw.sound, d.sound),
@@ -99,6 +102,7 @@ interface SettingsContextValue {
   settings: Settings;
   effective: EffectiveSettings;
   setSetting: <K extends keyof Settings>(key: K, value: Settings[K]) => void;
+  setAppearance: (theme: Settings['theme'], contrast: Settings['contrast']) => void;
   resetSettings: () => void;
   saved: boolean;
 }
@@ -113,11 +117,12 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const prefersDark = useMediaQuery('(prefers-color-scheme: dark)');
 
   const effective = useMemo<EffectiveSettings>(() => {
-    const highContrast = settings.contrast === 'high' || (settings.contrast === 'system' && prefersContrast);
+    const highContrast =
+      settings.theme.startsWith('ink-') || settings.contrast === 'high' || (settings.contrast === 'system' && prefersContrast);
     return {
       highContrast,
       reducedMotion: settings.motion === 'reduced' || (settings.motion === 'system' && prefersReducedMotion),
-      dark: settings.theme === 'dark' || (settings.theme === 'system' && prefersDark),
+      dark: settings.theme === 'dark' || settings.theme === 'ink-dark' || (settings.theme === 'system' && prefersDark),
       showImagery: settings.imagery && !settings.simplified && !highContrast,
     };
   }, [settings, prefersContrast, prefersReducedMotion, prefersDark]);
@@ -129,22 +134,32 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const root = document.documentElement.dataset;
     root.theme = effective.dark ? 'dark' : 'light';
-    root.contrast = effective.highContrast ? 'high' : 'standard';
+    root.contrast = effective.highContrast ? 'high' : settings.contrast === 'more' ? 'more' : 'standard';
+    root.palette = settings.theme.startsWith('ink-') ? 'mono' : settings.theme === 'ocean' ? 'ocean' : 'forest';
     root.motion = effective.reducedMotion ? 'reduced' : 'full';
     root.imagery = effective.showImagery ? 'on' : 'off';
     root.simplified = settings.simplified ? 'on' : 'off';
     root.font = settings.font;
     root.size = settings.fontSize;
     root.spacing = settings.spacing;
+    const icon = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+    if (icon)
+      icon.href = `${import.meta.env.BASE_URL}${
+        settings.theme.startsWith('ink-') ? `assets/brand/neuronav-mark-${effective.dark ? 'white' : 'black'}.svg` : 'favicon.svg'
+      }`;
   }, [effective, settings]);
 
   const setSetting = useCallback(<K extends keyof Settings>(key: K, value: Settings[K]) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
   }, []);
 
+  const setAppearance = useCallback((theme: Settings['theme'], contrast: Settings['contrast']) => {
+    setSettings((prev) => ({ ...prev, theme, contrast }));
+  }, []);
+
   const value = useMemo(
-    () => ({ settings, effective, setSetting, resetSettings: () => setSettings({ ...DEFAULT_SETTINGS }), saved }),
-    [settings, effective, setSetting, saved],
+    () => ({ settings, effective, setSetting, setAppearance, resetSettings: () => setSettings({ ...DEFAULT_SETTINGS }), saved }),
+    [settings, effective, setSetting, setAppearance, saved],
   );
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;

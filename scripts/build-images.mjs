@@ -12,6 +12,8 @@ const OUT = 'public/assets/neuronav';
 const WIDTHS = {
   'dashboard-hero-study-desk': [640, 1024, 1600],
   'focus-calm-wall': [1024, 1600],
+  'study-daylight-v2': [640, 1024, 1536],
+  'study-nightfall-v2': [640, 1024, 1536],
   subject: [320, 640],
 };
 
@@ -24,6 +26,7 @@ await mkdir(OUT, { recursive: true });
 
 for (const file of await readdir(SRC)) {
   if (!file.endsWith('.png')) continue;
+  if (process.argv[2] && !file.startsWith(process.argv[2])) continue;
   const name = path.basename(file, '.png');
   const input = sharp(path.join(SRC, file));
   const { width: masterWidth } = await input.metadata();

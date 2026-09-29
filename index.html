@@ -14,8 +14,10 @@
         try { s = JSON.parse(localStorage.getItem('neuronav_settings_v2') || '{}') || {}; } catch (e) {}
         var mq = function (q) { return window.matchMedia && window.matchMedia(q).matches; };
         var r = document.documentElement.dataset;
-        r.theme = s.theme === 'dark' || (s.theme !== 'light' && mq('(prefers-color-scheme: dark)')) ? 'dark' : 'light';
-        r.contrast = s.contrast === 'high' || (s.contrast !== 'standard' && mq('(prefers-contrast: more)')) ? 'high' : 'standard';
+        var mono = s.theme === 'ink-light' || s.theme === 'ink-dark';
+        r.theme = s.theme === 'dark' || s.theme === 'ink-dark' || ((!s.theme || s.theme === 'system') && mq('(prefers-color-scheme: dark)')) ? 'dark' : 'light';
+        r.palette = mono ? 'mono' : s.theme === 'ocean' ? 'ocean' : 'forest';
+        r.contrast = mono || s.contrast === 'high' || ((!s.contrast || s.contrast === 'system') && mq('(prefers-contrast: more)')) ? 'high' : s.contrast === 'more' ? 'more' : 'standard';
         r.motion = s.motion === 'reduced' || (s.motion !== 'full' && mq('(prefers-reduced-motion: reduce)')) ? 'reduced' : 'full';
         if (s.font) r.font = s.font;
         if (s.fontSize) r.size = s.fontSize;

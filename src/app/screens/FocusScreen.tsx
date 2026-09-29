@@ -7,7 +7,7 @@ import { useFeedback } from '../state/feedback';
 import { navigate } from '../state/router';
 import { useSettings } from '../state/settings';
 import { useTimer, type PendingReview } from '../state/timer';
-import { DecorativeImage } from '../components/DecorativeImage';
+import { StudyImage } from '../components/StudyImage';
 import { InterruptedNotice, TimerControls, TimerReadout, timerStatusText, useStartSession } from '../components/FocusTimer';
 import { ChoiceGroup, PageHeader } from '../components/primitives';
 
@@ -147,7 +147,7 @@ export function FocusScreen() {
 
   const background = effective.showImagery && (
     <div className="focus-bg" aria-hidden="true">
-      <DecorativeImage name="focus-calm-wall" widths={[1024, 1600]} sizes="100vw" width={1600} height={900} eager />
+      <StudyImage placement="focus" />
     </div>
   );
 

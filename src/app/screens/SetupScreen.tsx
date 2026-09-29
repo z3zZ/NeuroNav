@@ -7,6 +7,7 @@ import { useData } from '../state/data';
 import { useDraft } from '../state/drafts';
 import { navigate } from '../state/router';
 import { BrandMark } from '../components/AppShell';
+import { StudyImage } from '../components/StudyImage';
 import { SubjectPicker } from '../components/SubjectPicker';
 import { UKDateInput } from '../components/UKDateInput';
 import { PageHeader } from '../components/primitives';
@@ -92,6 +93,9 @@ export function SetupScreen() {
 
   return (
     <div className="setup">
+      <div className="setup__background" aria-hidden="true">
+        <StudyImage placement="setup" />
+      </div>
       <main className="setup__inner" id="main-content">
         <div className="setup__top">
           <span className="brand">

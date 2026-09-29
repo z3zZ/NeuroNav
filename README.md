@@ -67,3 +67,9 @@ See [the prioritised review](docs/redesign-review.md) and [the supplied brief](N
 `npm run build` checks TypeScript and creates the production build. With Microsoft Edge installed, run `npm run test:e2e` to test that build; Playwright starts the preview server on port 4173. On another test host, install the browser with `npx playwright install msedge` first.
 
 The suite runs real flows at 1440px and 375px, plus reflow checks at 320/375/768/1024/1440px, axe scans, display preferences, interruption/resume, notes/cards, legacy migration, image failures and offline work after loading. It uses isolated browser storage. Screenshots, failure traces and the HTML report stay local under `artifacts/`, `test-results/` and `playwright-report/`. Automated checks do not replace screen-reader or real-device testing.
+
+## Themes and branding
+
+Settings includes Match device, Warm paper, Forest clarity, Ocean clarity, Night study, Black on white and White on black. The higher-contrast palettes strengthen text and outlines; the maximum-contrast themes use 21:1 black/white main text and hide photographs. The background selector offers automatic daylight/evening scenes, an explicit choice, or the original photos. Existing font, spacing and study preferences are retained.
+
+The [asset and theme guide](docs/brand-and-themes.md) lists the SVG logo variants, generated backgrounds, responsive files and generation prompts. `node scripts/build-images.mjs study-` rebuilds only the new backgrounds.

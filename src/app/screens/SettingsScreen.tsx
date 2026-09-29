@@ -7,11 +7,12 @@ import { useFeedback } from '../state/feedback';
 import type { Route } from '../state/router';
 import { useSettings, type Settings } from '../state/settings';
 import { useTimer } from '../state/timer';
+import { ThemePicker } from '../components/ThemePicker';
 import { FocusSettings } from '../components/FocusSettings';
 import { ChoiceGroup, ConfirmDialog, PageHeader, Switch } from '../components/primitives';
 
 export function SettingsScreen({ route }: { route: Route }) {
-  const { settings, setSetting, resetSettings } = useSettings();
+  const { settings, effective, setSetting, setAppearance, resetSettings } = useSettings();
   const { data, update, replace, saveStatus } = useData();
   const { notify, announce } = useFeedback();
   const { timer, discard, clearReview } = useTimer();
@@ -25,7 +26,10 @@ export function SettingsScreen({ route }: { route: Route }) {
     if (section) document.getElementById(section)?.scrollIntoView();
   }, [route]);
 
-  const set = <K extends keyof Settings>(key: K) => (value: Settings[K]) => setSetting(key, value);
+  const set =
+    <K extends keyof Settings>(key: K) =>
+    (value: Settings[K]) =>
+      setSetting(key, value);
 
   const exportData = () => {
     const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), data, settings }, null, 2)], {
@@ -72,6 +76,7 @@ export function SettingsScreen({ route }: { route: Route }) {
   return (
     <>
       <PageHeader title="Settings" intro="Changes apply straight away and are saved in this browser." />
+      <ThemePicker />
       <div className="settings-grid">
         <section className="card settings-section" aria-labelledby="a11y-heading">
           <h2 id="a11y-heading" className="card__title">
@@ -119,10 +124,15 @@ export function SettingsScreen({ route }: { route: Route }) {
               legend="Contrast"
               name="contrast"
               value={settings.contrast}
-              onChange={set('contrast')}
+              onChange={(contrast) =>
+                settings.theme.startsWith('ink-') && contrast !== 'high'
+                  ? setAppearance(effective.dark ? 'dark' : 'light', contrast)
+                  : setSetting('contrast', contrast)
+              }
               options={[
                 { value: 'system', label: 'Match device' },
                 { value: 'standard', label: 'Standard' },
+                { value: 'more', label: 'Higher' },
                 { value: 'high', label: 'High' },
               ]}
             />
@@ -135,17 +145,6 @@ export function SettingsScreen({ route }: { route: Route }) {
                 { value: 'system', label: 'Match device' },
                 { value: 'reduced', label: 'Reduced' },
                 { value: 'full', label: 'Subtle' },
-              ]}
-            />
-            <ChoiceGroup
-              legend="Colour theme"
-              name="theme"
-              value={settings.theme}
-              onChange={set('theme')}
-              options={[
-                { value: 'system', label: 'Match device' },
-                { value: 'light', label: 'Light' },
-                { value: 'dark', label: 'Dark' },
               ]}
             />
             <Switch
@@ -329,7 +328,12 @@ export function SettingsScreen({ route }: { route: Route }) {
       <ConfirmDialog
         open={confirmReset}
         title="Delete all your data?"
-        body={<p>This removes your subjects, tasks, notes, flashcards and sessions from this browser. Download a backup first if you might want them later.</p>}
+        body={
+          <p>
+            This removes your subjects, tasks, notes, flashcards and sessions from this browser. Download a backup first if you might want
+            them later.
+          </p>
+        }
         confirmLabel="Delete everything"
         danger
         onCancel={() => setConfirmReset(false)}

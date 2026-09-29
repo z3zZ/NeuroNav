@@ -3,7 +3,7 @@ import { Switch } from './primitives';
 
 /** The four quick switches. Changes apply immediately and are saved. */
 export function FocusSettings() {
-  const { settings, effective, setSetting } = useSettings();
+  const { settings, effective, setSetting, setAppearance } = useSettings();
   return (
     <div>
       <Switch
@@ -14,9 +14,13 @@ export function FocusSettings() {
       />
       <Switch
         label="High contrast"
-        description="Black and white with stronger outlines. Hides photos."
+        description="Stronger outlines and no photos. More themes in Settings."
         checked={effective.highContrast}
-        onChange={(on) => setSetting('contrast', on ? 'high' : 'standard')}
+        onChange={(on) =>
+          settings.theme.startsWith('ink-') && !on
+            ? setAppearance(effective.dark ? 'dark' : 'light', 'standard')
+            : setSetting('contrast', on ? 'high' : 'standard')
+        }
       />
       <Switch
         label="OpenDyslexic font"

@@ -6,7 +6,7 @@ import { useData } from '../state/data';
 import { useSettings } from '../state/settings';
 import { useTimer } from '../state/timer';
 import { useRoute } from '../state/router';
-import { DecorativeImage } from './DecorativeImage';
+import { StudyImage } from './StudyImage';
 import { useStartSession } from './FocusTimer';
 import { StudyStepForm } from './StudyStepForm';
 
@@ -156,14 +156,7 @@ export function NextActionCard() {
       </div>
       {effective.showImagery && !guided && (
         <div className="hero__media">
-          <DecorativeImage
-            name="dashboard-hero-study-desk"
-            widths={[640, 1024, 1600]}
-            sizes="(max-width: 767px) 100vw, 30vw"
-            width={1600}
-            height={900}
-            eager
-          />
+          <StudyImage placement="hero" />
         </div>
       )}
     </section>
