@@ -12,7 +12,7 @@ import {
   restoreTopic,
   updateSubject,
 } from '../lib/actions';
-import { daysUntil, describeExam, uid } from '../lib/dates';
+import { daysUntil, describeExam, isISODate, uid } from '../lib/dates';
 import { journeyFor, STAGE_LABELS } from '../lib/selectors';
 import { SUBJECT_COLOURS, type Subject, type SubjectColour, type SubjectImageChoice } from '../lib/types';
 import { useData } from '../state/data';
@@ -23,6 +23,8 @@ import { ChoiceGroup, ConfirmDialog, EmptyState, PageHeader } from '../component
 import { SubjectCard } from '../components/SubjectCard';
 import { TaskForm } from '../components/TaskForm';
 import { TaskList } from '../components/TaskList';
+import { SubjectPicker } from '../components/SubjectPicker';
+import { UKDateInput } from '../components/UKDateInput';
 
 const COLOUR_NAMES: Record<SubjectColour, string> = {
   forest: 'Forest green',
@@ -35,13 +37,27 @@ const COLOUR_NAMES: Record<SubjectColour, string> = {
 
 type SubjectDraft = Pick<Subject, 'name' | 'examDate' | 'difficulty' | 'energyDrain' | 'image' | 'colour'>;
 
-function SubjectForm({ initial, submitLabel, onSubmit, onCancel }: { initial?: SubjectDraft; submitLabel: string; onSubmit: (s: SubjectDraft) => void; onCancel?: () => void }) {
+function SubjectForm({
+  initial,
+  submitLabel,
+  onSubmit,
+  onCancel,
+}: {
+  initial?: SubjectDraft;
+  submitLabel: string;
+  onSubmit: (s: SubjectDraft) => void;
+  onCancel?: () => void;
+}) {
   const id = useId();
   const [draft, setDraft] = useState<SubjectDraft>(
     initial ?? { name: '', examDate: '', difficulty: 'moderate', energyDrain: 'medium', image: 'auto', colour: 'forest' },
   );
   const [error, setError] = useState('');
-  const set = <K extends keyof SubjectDraft>(key: K) => (value: SubjectDraft[K]) => setDraft((d) => ({ ...d, [key]: value }));
+  const [dateError, setDateError] = useState('');
+  const set =
+    <K extends keyof SubjectDraft>(key: K) =>
+    (value: SubjectDraft[K]) =>
+      setDraft((d) => ({ ...d, [key]: value }));
 
   return (
     <form
@@ -50,87 +66,109 @@ function SubjectForm({ initial, submitLabel, onSubmit, onCancel }: { initial?: S
       onSubmit={(e) => {
         e.preventDefault();
         if (!draft.name.trim()) {
-          setError('Enter a subject name.');
-          document.getElementById(`${id}-name`)?.focus();
+          setError('Choose a subject or enter a custom name.');
+          (document.getElementById(`${id}-name-custom`) ?? document.getElementById(`${id}-name`))?.focus();
           return;
         }
+        if (draft.examDate && !isISODate(draft.examDate)) {
+          setDateError('Enter a real date as DD/MM/YYYY, or leave it blank.');
+          window.setTimeout(() => document.getElementById(`${id}-exam`)?.focus(), 0);
+          return;
+        }
+        setDateError('');
         setError('');
         onSubmit({ ...draft, name: draft.name.trim() });
       }}
     >
-      <div className="field">
-        <label className="label" htmlFor={`${id}-name`}>
-          Subject name
-        </label>
-        <input
-          id={`${id}-name`}
-          className="input"
-          value={draft.name}
-          onChange={(e) => set('name')(e.target.value)}
-          aria-invalid={error ? true : undefined}
-          aria-describedby={error ? `${id}-name-error` : undefined}
-        />
-        {error && (
-          <p id={`${id}-name-error`} className="error-text">
-            {error}
-          </p>
-        )}
-      </div>
-      <div className="field">
-        <label className="label" htmlFor={`${id}-exam`}>
-          Exam date <span className="muted">(optional)</span>
-        </label>
-        <input id={`${id}-exam`} className="input" type="date" value={draft.examDate} onChange={(e) => set('examDate')(e.target.value)} />
-      </div>
-      <ChoiceGroup
-        legend="How challenging is it for you?"
-        name="difficulty"
-        value={draft.difficulty}
-        onChange={set('difficulty')}
-        options={[
-          { value: 'easy', label: 'Easier' },
-          { value: 'moderate', label: 'Medium' },
-          { value: 'challenging', label: 'Harder' },
-        ]}
+      <SubjectPicker
+        id={`${id}-name`}
+        value={draft.name}
+        onChange={(name) => setDraft((d) => ({ ...d, name, image: 'auto' }))}
+        error={error}
       />
-      <ChoiceGroup
-        legend="How much energy does it take?"
-        name="energy"
-        value={draft.energyDrain}
-        onChange={set('energyDrain')}
-        options={[
-          { value: 'low', label: 'Light' },
-          { value: 'medium', label: 'Medium' },
-          { value: 'high', label: 'Draining' },
-        ]}
-      />
-      <div className="task-form__row">
-        <div className="field">
-          <label className="label" htmlFor={`${id}-image`}>
-            Card picture
-          </label>
-          <select id={`${id}-image`} className="select" value={draft.image} onChange={(e) => set('image')(e.target.value as SubjectImageChoice)}>
-            <option value="auto">Choose from the name</option>
-            <option value="computing">Computing: keyboard and circuit</option>
-            <option value="biology">Biology: fern</option>
-            <option value="maths">Maths: geometry tools</option>
-            <option value="history">History: archive papers</option>
-            <option value="none">No photo, colour only</option>
-          </select>
+      <p className="hint">The subject picture is chosen automatically. Other subjects use a colour and pattern.</p>
+      <details className="optional-details" open={dateError ? true : undefined}>
+        <summary>Exam date and preferences (optional)</summary>
+        <div className="stack">
+          <div className="field">
+            <label className="label" htmlFor={`${id}-exam`}>
+              Exam date (DD/MM/YYYY) <span className="muted">(optional)</span>
+            </label>
+            <UKDateInput
+              id={`${id}-exam`}
+              className="input"
+              value={draft.examDate}
+              onChange={set('examDate')}
+              aria-invalid={!!dateError}
+              aria-describedby={dateError ? `${id}-date-error` : undefined}
+            />
+            {dateError && (
+              <p id={`${id}-date-error`} className="error-text" role="alert">
+                {dateError}
+              </p>
+            )}
+          </div>
+          <ChoiceGroup
+            legend="How challenging is it for you?"
+            name="difficulty"
+            value={draft.difficulty}
+            onChange={set('difficulty')}
+            options={[
+              { value: 'easy', label: 'Easier' },
+              { value: 'moderate', label: 'Medium' },
+              { value: 'challenging', label: 'Harder' },
+            ]}
+          />
+          <ChoiceGroup
+            legend="How much energy does it take?"
+            name="energy"
+            value={draft.energyDrain}
+            onChange={set('energyDrain')}
+            options={[
+              { value: 'low', label: 'Light' },
+              { value: 'medium', label: 'Medium' },
+              { value: 'high', label: 'Draining' },
+            ]}
+          />
+          <div className="task-form__row">
+            <div className="field">
+              <label className="label" htmlFor={`${id}-image`}>
+                Card picture
+              </label>
+              <select
+                id={`${id}-image`}
+                className="select"
+                value={draft.image}
+                onChange={(e) => set('image')(e.target.value as SubjectImageChoice)}
+              >
+                <option value="auto">Choose from the name</option>
+                <option value="computing">Computing: keyboard and circuit</option>
+                <option value="biology">Biology: fern</option>
+                <option value="maths">Maths: geometry tools</option>
+                <option value="history">History: archive papers</option>
+                <option value="none">No photo, colour only</option>
+              </select>
+            </div>
+            <div className="field">
+              <label className="label" htmlFor={`${id}-colour`}>
+                Card colour
+              </label>
+              <select
+                id={`${id}-colour`}
+                className="select"
+                value={draft.colour}
+                onChange={(e) => set('colour')(e.target.value as SubjectColour)}
+              >
+                {SUBJECT_COLOURS.map((c) => (
+                  <option key={c} value={c}>
+                    {COLOUR_NAMES[c]}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
         </div>
-        <div className="field">
-          <label className="label" htmlFor={`${id}-colour`}>
-            Card colour
-          </label>
-          <select id={`${id}-colour`} className="select" value={draft.colour} onChange={(e) => set('colour')(e.target.value as SubjectColour)}>
-            {SUBJECT_COLOURS.map((c) => (
-              <option key={c} value={c}>
-                {COLOUR_NAMES[c]}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
+      </details>
       <div className="button-row">
         <button type="submit" className="btn btn--primary">
           {submitLabel}
@@ -219,7 +257,9 @@ export function SubjectDetailScreen({ id }: { id: string }) {
     );
   }
 
-  const tasks = data.tasks.filter((t) => t.subjectId === subject.id).sort((a, b) => a.dueDate.localeCompare(b.dueDate) || a.order - b.order);
+  const tasks = data.tasks
+    .filter((t) => t.subjectId === subject.id)
+    .sort((a, b) => a.dueDate.localeCompare(b.dueDate) || a.order - b.order);
 
   return (
     <>
@@ -228,7 +268,14 @@ export function SubjectDetailScreen({ id }: { id: string }) {
       </p>
       <PageHeader title={subject.name} intro={describeExam(subject.examDate)}>
         <div className="button-row">
-          <button type="button" className="btn btn--primary" onClick={() => startSession({ ref: { subjectId: subject.id, topicId: null } })}>
+          <a className="btn btn--primary" href={`#/work?plan=1&ref=${encodeURIComponent(`${subject.id}|`)}`}>
+            Plan a small task
+          </a>
+          <button
+            type="button"
+            className="btn btn--secondary"
+            onClick={() => startSession({ ref: { subjectId: subject.id, topicId: null } })}
+          >
             Start studying
           </button>
           <button type="button" className="btn btn--secondary" aria-expanded={editing} onClick={() => setEditing((e) => !e)}>
@@ -288,7 +335,13 @@ export function SubjectDetailScreen({ id }: { id: string }) {
                         <label className="visually-hidden" htmlFor={`rename-${t.id}`}>
                           New name for {t.name}
                         </label>
-                        <input id={`rename-${t.id}`} className="input" value={renaming.name} onChange={(e) => setRenaming({ id: t.id, name: e.target.value })} autoFocus />
+                        <input
+                          id={`rename-${t.id}`}
+                          className="input"
+                          value={renaming.name}
+                          onChange={(e) => setRenaming({ id: t.id, name: e.target.value })}
+                          autoFocus
+                        />
                         <button type="submit" className="btn btn--primary btn--small">
                           Save
                         </button>
@@ -301,14 +354,29 @@ export function SubjectDetailScreen({ id }: { id: string }) {
                         <div>
                           <p className="topic-row__name">{t.name}</p>
                           <p className="small muted">
-                            {journey.current ? `Next stage: ${STAGE_LABELS[journey.current]}` : 'All stages done'} · {journey.completed} of 5 stages
+                            {journey.current ? `Next stage: ${STAGE_LABELS[journey.current]}` : 'All stages done'} · {journey.completed} of
+                            5 stages
                           </p>
                         </div>
                         <div className="button-row" style={{ gap: '0.25rem' }}>
-                          <button type="button" className="btn btn--secondary btn--small" onClick={() => startSession({ ref: { subjectId: subject.id, topicId: t.id } })}>
+                          <a
+                            className="btn btn--secondary btn--small"
+                            href={`#/work?plan=1&ref=${encodeURIComponent(`${subject.id}|${t.id}`)}`}
+                          >
+                            Plan task<span className="visually-hidden"> for {t.name}</span>
+                          </a>
+                          <button
+                            type="button"
+                            className="btn btn--secondary btn--small"
+                            onClick={() => startSession({ ref: { subjectId: subject.id, topicId: t.id } })}
+                          >
                             Start<span className="visually-hidden"> {t.name}</span>
                           </button>
-                          <button type="button" className="btn btn--ghost btn--small" onClick={() => setRenaming({ id: t.id, name: t.name })}>
+                          <button
+                            type="button"
+                            className="btn btn--ghost btn--small"
+                            onClick={() => setRenaming({ id: t.id, name: t.name })}
+                          >
                             Rename<span className="visually-hidden"> {t.name}</span>
                           </button>
                           <button
@@ -404,7 +472,13 @@ export function SubjectDetailScreen({ id }: { id: string }) {
             </div>
           )}
           {tasks.length ? (
-            <TaskList tasks={tasks} onStart={(task) => startSession({ task })} showDate collapseDoneAfter={2} label={`${subject.name} tasks`} />
+            <TaskList
+              tasks={tasks}
+              onStart={(task) => startSession({ task })}
+              showDate
+              collapseDoneAfter={2}
+              label={`${subject.name} tasks`}
+            />
           ) : (
             !addingTask && <EmptyState title="No tasks for this subject yet." />
           )}

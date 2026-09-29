@@ -9,7 +9,7 @@ export function todayISO(): string {
 }
 
 export function isISODate(value: unknown): value is string {
-  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(parseISODate(value).getTime());
+  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && toISODate(parseISODate(value)) === value;
 }
 
 /** Parses YYYY-MM-DD as a local date (new Date('YYYY-MM-DD') would be UTC). */

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { addTask, lightenToday, restoreDueDates } from '../lib/actions';
-import { daysUntil, todayISO } from '../lib/dates';
 import { openTasksForToday, todaysTasks } from '../lib/selectors';
 import { useData } from '../state/data';
 import { useFeedback } from '../state/feedback';
@@ -18,19 +17,6 @@ export function PlanCard() {
   const tasks = todaysTasks(data);
   const open = openTasksForToday(data);
   const done = tasks.filter((t) => t.done).length;
-
-  const nearest = [...data.subjects].sort((a, b) => (daysUntil(a.examDate) ?? 9999) - (daysUntil(b.examDate) ?? 9999))[0];
-
-  const addStarter = () => {
-    update((d) => addTask(d, {
-      title: nearest ? `Read one page of ${nearest.name} notes` : 'Read one page of notes',
-      subjectId: nearest?.id ?? null,
-      topicId: null,
-      durationMin: 10,
-      dueDate: todayISO(),
-    })[0]);
-    announce('Starter task added.');
-  };
 
   const lighten = () => {
     const previous = Object.fromEntries(open.map((t) => [t.id, t.dueDate]));
@@ -58,12 +44,8 @@ export function PlanCard() {
       {tasks.length === 0 ? (
         <div className="empty-state">
           <p className="empty-state__title">Nothing planned for today.</p>
-          <p className="muted">One small task is enough to get going.</p>
-          <div className="button-row" style={{ marginTop: '0.75rem' }}>
-            <button type="button" className="btn btn--secondary btn--small" onClick={addStarter}>
-              Add a 10-minute starter task
-            </button>
-          </div>
+          <p className="muted">Choose a topic above to make your first small task, or add your own below.</p>
+
         </div>
       ) : (
         <TaskList tasks={tasks} onStart={(task) => startSession({ task })} collapseDoneAfter={0} label="Today’s tasks" />

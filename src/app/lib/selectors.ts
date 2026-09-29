@@ -69,6 +69,11 @@ export function nextAction(d: AppData): NextAction {
   }
 
   const minutes = sessionMinutes(d.profile.sessionLength);
+  const focusedSubject = d.focusTopic && subjectById(d, d.focusTopic.subjectId);
+  if (focusedSubject && d.focusTopic) {
+    const topic = topicById(d, focusedSubject.id, d.focusTopic.topicId);
+    return { kind: 'topic', ref: { subjectId: focusedSubject.id, topicId: topic?.id ?? null }, title: `Continue ${topic?.name ?? focusedSubject.name}`, meta: [focusedSubject.name], minutes, reason: 'Your selected topic' };
+  }
   const last = d.lastActive && subjectById(d, d.lastActive.subjectId);
   if (last && d.lastActive) {
     const topic = topicById(d, d.lastActive.subjectId, d.lastActive.topicId);
@@ -82,8 +87,8 @@ export function nextAction(d: AppData): NextAction {
     };
   }
 
-  const nearest = [...d.subjects]
-    .filter((s) => (daysUntil(s.examDate) ?? 0) >= 0)
+  const upcomingSubjects = d.subjects.filter((s) => (daysUntil(s.examDate) ?? 0) >= 0);
+  const nearest = [...(upcomingSubjects.length ? upcomingSubjects : d.subjects)]
     .sort((a, b) => (daysUntil(a.examDate) ?? 9999) - (daysUntil(b.examDate) ?? 9999))[0];
   if (nearest) {
     return {
@@ -92,7 +97,7 @@ export function nextAction(d: AppData): NextAction {
       title: `Start ${nearest.topics[0]?.name ?? nearest.name}`,
       meta: [`${minutes} minutes`, nearest.topics[0] ? nearest.name : ''].filter(Boolean),
       minutes,
-      reason: nearest.examDate ? 'Your nearest exam' : 'One of your subjects',
+      reason: nearest.examDate && (daysUntil(nearest.examDate) ?? -1) >= 0 ? 'Your nearest exam' : 'One of your subjects',
     };
   }
 

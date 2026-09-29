@@ -1,8 +1,9 @@
 import { useId, useState } from 'react';
-import { todayISO } from '../lib/dates';
+import { isISODate, todayISO } from '../lib/dates';
 import { parseRefValue, refValue, topicOptions } from '../lib/selectors';
 import type { Task } from '../lib/types';
 import { useData } from '../state/data';
+import { UKDateInput } from './UKDateInput';
 
 export interface TaskFormValues {
   title: string;
@@ -44,7 +45,7 @@ export function TaskForm({
     const minutes = Number(duration);
     if (!title.trim()) next.title = 'Enter what you want to do.';
     if (!Number.isFinite(minutes) || minutes < 1 || minutes > 600) next.duration = 'Use a number of minutes between 1 and 600.';
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(due)) next.due = 'Choose a date.';
+    if (!isISODate(due)) next.due = 'Enter a real date as DD/MM/YYYY.';
     setErrors(next);
     if (Object.keys(next).length) {
       document.getElementById(`${id}-${Object.keys(next)[0]}`)?.focus();
@@ -123,14 +124,13 @@ export function TaskForm({
         </div>
         <div className="field">
           <label className="label" htmlFor={`${id}-due`}>
-            Date
+            Date (DD/MM/YYYY)
           </label>
-          <input
+          <UKDateInput
             id={`${id}-due`}
             className="input"
-            type="date"
             value={due}
-            onChange={(e) => setDue(e.target.value)}
+            onChange={setDue}
             aria-invalid={errors.due ? true : undefined}
             aria-describedby={errors.due ? `${id}-due-error` : undefined}
           />

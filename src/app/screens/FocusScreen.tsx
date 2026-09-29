@@ -17,12 +17,17 @@ function Reflection({ review }: { review: PendingReview }) {
   const { clearReview } = useTimer();
   const { announce } = useFeedback();
   const task = review.taskId ? data.tasks.find((t) => t.id === review.taskId) : undefined;
+  const session = data.sessions.find((s) => s.id === review.sessionId);
+  const subjectId = task?.subjectId ?? session?.subjectId;
+  const topicId = task?.topicId ?? session?.topicId;
+  const topicRef = subjectId ? encodeURIComponent(`${subjectId}|${topicId ?? ''}`) : '';
+  const cards = data.flashcards.filter((c) => c.subjectId === subjectId && (!topicId || c.topicId === topicId));
   const [markDone, setMarkDone] = useState(false);
   const [workload, setWorkload] = useState<ReflectionData['workload'] | ''>('');
   const [energy, setEnergy] = useState(50);
   const [wouldContinue, setWouldContinue] = useState<'' | 'yes' | 'no'>('');
 
-  const close = (save: boolean) => {
+  const close = (save: boolean, destination = '/work') => {
     update((d) => {
       let next = d;
       if (markDone && task) next = setTaskDone(next, task.id, true);
@@ -32,8 +37,8 @@ function Reflection({ review }: { review: PendingReview }) {
       return next;
     });
     clearReview();
-    announce(save ? 'Reflection saved.' : 'Back to Work.');
-    navigate('/work');
+    announce(save ? 'Reflection saved.' : 'Review closed.');
+    navigate(destination);
   };
 
   const canSave = !!workload && !!wouldContinue;
@@ -109,7 +114,27 @@ function Reflection({ review }: { review: PendingReview }) {
           {review.sessionId ? 'Skip' : 'Back to Work'}
         </button>
       </div>
-      {review.sessionId && !canSave && <p className="hint" style={{ marginTop: '0.5rem' }}>Answer both questions to save, or skip.</p>}
+      {review.sessionId && !canSave && (
+        <p className="hint" style={{ marginTop: '0.5rem' }}>
+          Answer both questions to save, or skip.
+        </p>
+      )}
+      {topicRef && (
+        <div className="card__footer stack">
+          <h3 className="label">Review what you learned</h3>
+          <p className="hint">Optional: recall one thing without looking, then check your notes.</p>
+          <div className="button-row">
+            <button type="button" className="btn btn--secondary" onClick={() => close(canSave, `/notes?new=1&ref=${topicRef}`)}>
+              Write a review note
+            </button>
+            {cards.length > 0 && (
+              <button type="button" className="btn btn--secondary" onClick={() => close(canSave, `/flashcards?deck=${topicRef}`)}>
+                Review topic flashcards
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </section>
   );
 }

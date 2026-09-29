@@ -16,6 +16,11 @@ export function useStartSession() {
   const { timer, start } = useTimer();
   const { notify } = useFeedback();
   return (target: { task?: Task; ref?: TopicRef | null; minutes?: number; title?: string }) => {
+    if (timer.pendingReview) {
+      notify('Review or skip your last session before starting another.');
+      navigate('/focus');
+      return;
+    }
     if (timer.status !== 'idle') {
       notify('A session is already in progress. Finish or discard it first.');
       navigate('/focus');

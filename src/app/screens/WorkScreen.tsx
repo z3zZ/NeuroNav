@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { daysUntil } from '../lib/dates';
 import { useData } from '../state/data';
 import { useSettings } from '../state/settings';
+import { useTimer } from '../state/timer';
 import { FocusSettings } from '../components/FocusSettings';
 import { FocusTimerCard } from '../components/FocusTimer';
 import { NextActionCard } from '../components/NextActionCard';
@@ -59,6 +60,7 @@ export function WorkScreen() {
   const { data, update, loadProblem, backupKey, dismissLoadProblem } = useData();
   const { settings, setSetting } = useSettings();
   const simplified = settings.simplified;
+  const { timer } = useTimer();
 
   return (
     <>
@@ -94,11 +96,16 @@ export function WorkScreen() {
       <div className={`work-grid${simplified ? ' work-grid--simplified' : ''}`}>
         <NextActionCard />
         <PlanCard />
-        <FocusTimerCard />
+        {timer.status !== 'idle' ? <FocusTimerCard /> : !timer.pendingReview && (
+          <details className="card area-timer timer-options">
+            <summary>Adjust focus time or focus without a task</summary>
+            <FocusTimerCard />
+          </details>
+        )}
         {!simplified && (
           <>
-            <SubjectsCard />
-            <JourneyCard />
+            {data.subjects.length > 0 && <SubjectsCard />}
+            {data.subjects.length > 0 && <JourneyCard />}
             <QuickActions />
             <section className="card area-settings" aria-labelledby="quick-settings-heading">
               <div className="card__header">

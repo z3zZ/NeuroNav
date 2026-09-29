@@ -9,7 +9,7 @@ function stageLink(stage: JourneyStage, ref: TopicRef): { href: string; label: s
   const value = encodeURIComponent(refValue(ref));
   switch (stage) {
     case 'plan':
-      return { href: '#/tasks', label: 'Plan a task' };
+      return { href: `#/work?plan=1&ref=${value}`, label: 'Plan a task' };
     case 'learn':
       return { href: `#/notes?new=1&ref=${value}`, label: 'Write a note' };
     case 'practice':

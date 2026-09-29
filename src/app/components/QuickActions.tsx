@@ -3,7 +3,7 @@ import { BookOpen, HelpCircle, Layers, ListTree, Plus, X } from 'lucide-react';
 import { addCards, addNote, addTask, recordPractice, setSteps } from '../lib/actions';
 import { todayISO } from '../lib/dates';
 import { sessionMinutes } from '../lib/plan';
-import { contextLabel, openTasksForToday, parseRefValue, topicOptions } from '../lib/selectors';
+import { contextLabel, journeyTopic, refValue, openTasksForToday, parseRefValue, topicOptions } from '../lib/selectors';
 import { localProvider, ToolInputError, type ToolId, type ToolResult } from '../lib/tools';
 import { useData } from '../state/data';
 import { useDraft } from '../state/drafts';
@@ -77,7 +77,7 @@ export function QuickActions() {
   const { notify, announce } = useFeedback();
   const id = useId();
   const resultHeading = useRef<HTMLHeadingElement>(null);
-  const [target, setTarget] = useDraft('quick-target', '');
+  const [target, setTarget] = useDraft('quick-target', journeyTopic(data) ? `ref:${refValue(journeyTopic(data))}` : '');
   const [noteId, setNoteId] = useDraft('quick-note', '');
   const [text, setText] = useDraft('quick-text', '');
   const [status, setStatus] = useState<Status>({ state: 'idle' });

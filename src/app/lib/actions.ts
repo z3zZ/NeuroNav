@@ -348,5 +348,5 @@ export function recordPractice(d: D, record: Omit<PracticeRecord, 'id' | 'at'>):
 
 export function setLastActive(d: D, subjectId: string | null, topicId: string | null, taskId: string | null): D {
   if (!subjectId) return d;
-  return { ...d, lastActive: { subjectId, topicId, taskId, at: nowISO() } };
+  return { ...d, focusTopic: { subjectId, topicId }, lastActive: { subjectId, topicId, taskId, at: nowISO() } };
 }

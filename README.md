@@ -19,7 +19,7 @@ The build uses a relative base and hash routes (`#/work`, `#/tasks`, …), so `d
 | --- | --- |
 | **Work** | One suggested next action with a single “Start studying” button, today's plan, focus session, subjects, study journey, quick actions and accessibility switches. |
 | **Tasks** | Add, edit, complete (with undo), reorder, move to tomorrow, delete (with undo), optional steps. “Today feels hard” keeps one task and moves the rest to tomorrow. “Suggest tasks” builds a plan from exam dates and energy; nothing is added until you choose. Print. |
-| **Subjects** | Subjects with topics, decorative photos with colour/pattern fallbacks, per-topic next stage. |
+| **Subjects** | Subject dropdown with Other custom entry, automatic photos with colour/pattern fallbacks, optional exam/preferences, topics and per-topic next stage. |
 | **Focus** | Timestamp-based timer (no drift in background tabs), presets or custom length, gentle end-of-block prompt, optional breaks and a skippable reflection. A session interrupted by closing the page comes back paused, with a choice. Silent by default. |
 | **Notes** | Save as you type. |
 | **Flashcards** | Decks per subject/topic with Leitner-style review. |
@@ -59,3 +59,11 @@ Targets WCAG 2.2 AA. Checked in Edge with axe-core on every route in light, dark
 - `prefers-reduced-motion`, `prefers-contrast` and `prefers-color-scheme` are respected, and each can be overridden in Settings
 
 The unused `src/app/components/ui/` kit from the original Figma export is excluded from type-checking.
+
+## Journey review and browser tests
+
+See [the prioritised review](docs/redesign-review.md) and [the supplied brief](NeuroNav-Redesign-Brief.md). First run asks for one subject; name, exam date and preferences can wait. It does not automatically add suggested tasks. Dates are entered as DD/MM/YYYY and remain ISO dates in storage.
+
+`npm run build` checks TypeScript and creates the production build. With Microsoft Edge installed, run `npm run test:e2e` to test that build; Playwright starts the preview server on port 4173. On another test host, install the browser with `npx playwright install msedge` first.
+
+The suite runs real flows at 1440px and 375px, plus reflow checks at 320/375/768/1024/1440px, axe scans, display preferences, interruption/resume, notes/cards, legacy migration, image failures and offline work after loading. It uses isolated browser storage. Screenshots, failure traces and the HTML report stay local under `artifacts/`, `test-results/` and `playwright-report/`. Automated checks do not replace screen-reader or real-device testing.

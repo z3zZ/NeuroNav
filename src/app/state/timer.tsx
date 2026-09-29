@@ -311,7 +311,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   const finish = useCallback((): PendingReview | null => {
     const t = timerRef.current;
     if (t.status === 'idle') return null;
-    const minutes = Math.round(focusedMs(t) / 60_000);
+    const minutes = Math.floor(focusedMs(t) / 60_000);
     let sessionId: string | null = null;
     if (minutes >= 1 && t.context) {
       const ctx = t.context;

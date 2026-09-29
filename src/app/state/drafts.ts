@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { STORAGE_KEYS, isObject, readJSON, writeJSON } from '../lib/storage';
 
 type Drafts = Record<string, string>;
@@ -14,18 +14,11 @@ export function useDraft(key: string, initial = ''): [string, (value: string) =>
     const saved = readDrafts()[key];
     return typeof saved === 'string' ? saved : initial;
   });
-  const timer = useRef<number | undefined>(undefined);
-
-  useEffect(() => {
-    window.clearTimeout(timer.current);
-    timer.current = window.setTimeout(() => {
-      const drafts = readDrafts();
-      if (value) drafts[key] = value;
-      else delete drafts[key];
-      writeJSON(STORAGE_KEYS.drafts, drafts);
-    }, 250);
-    return () => window.clearTimeout(timer.current);
-  }, [key, value]);
-
-  return [value, setValue];
+  return [value, (next: string) => {
+    setValue(next);
+    const drafts = readDrafts();
+    if (next) drafts[key] = next;
+    else delete drafts[key];
+    writeJSON(STORAGE_KEYS.drafts, drafts);
+  }];
 }

@@ -1,142 +1,165 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Play } from 'lucide-react';
 import { greeting, relativeDay } from '../lib/dates';
-import { byOrder, contextLabel, nextAction } from '../lib/selectors';
+import { byOrder, contextLabel, nextAction, parseRefValue } from '../lib/selectors';
 import { useData } from '../state/data';
-import { navigate } from '../state/router';
 import { useSettings } from '../state/settings';
 import { useTimer } from '../state/timer';
+import { useRoute } from '../state/router';
 import { DecorativeImage } from './DecorativeImage';
 import { useStartSession } from './FocusTimer';
+import { StudyStepForm } from './StudyStepForm';
 
-/** Hero: a short welcome and one concrete next step with one primary button. */
 export function NextActionCard() {
   const { data, update } = useData();
   const { effective } = useSettings();
   const { timer } = useTimer();
   const startSession = useStartSession();
   const [choosing, setChoosing] = useState(false);
+  const route = useRoute();
+  const [planning, setPlanning] = useState(route.query.get('plan') === '1');
+  useEffect(() => {
+    if (route.query.get('plan') === '1') setPlanning(true);
+  }, [route.query]);
   const action = nextAction(data);
-  const name = data.profile.name.trim();
+  const active = timer.status !== 'idle';
+  const review = !active && timer.pendingReview;
+  const guided = !active && !review && data.subjects.length > 0 && (planning || action.kind === 'topic');
+  const ref =
+    parseRefValue(route.query.get('ref') ?? '') ??
+    (action.kind === 'topic' ? action.ref : (data.focusTopic ?? { subjectId: data.subjects[0]?.id ?? '', topicId: null }));
   const alternatives = data.tasks
     .filter((t) => !t.done && (action.kind !== 'task' || t.id !== action.task.id))
     .sort(byOrder)
     .slice(0, 6);
-
-  const sessionActive = timer.status !== 'idle';
+  const stage = review ? 4 : active ? 3 : action.kind === 'setup' ? 0 : guided ? 1 : 2;
 
   return (
-    <section className="card hero area-hero" aria-labelledby="next-action-title">
+    <section className={`card hero area-hero${guided ? ' hero--guided' : ''}`} aria-labelledby="next-action-title">
       <div className="hero__content">
         <p className="hero__greeting">
           {greeting()}
-          {name ? `, ${name}` : ''}
+          {data.profile.name.trim() ? `, ${data.profile.name.trim()}` : ''}
         </p>
-        {sessionActive ? (
+        <ol className="study-path" aria-label="Your study session">
+          {['Subject', 'Topic', 'Small task', 'Focus', 'Review'].map((label, i) => (
+            <li key={label} aria-current={i === stage ? 'step' : undefined}>
+              {label}
+            </li>
+          ))}
+        </ol>
+        {active ? (
           <>
             <p className="eyebrow">Session in progress</p>
-            <h2 id="next-action-title" className="hero__title" tabIndex={-1}>
+            <h2 id="next-action-title" className="hero__title">
               {timer.context?.label || 'Focus session'}
             </h2>
-            <div className="button-row">
-              <a className="btn btn--primary btn--large" href="#/focus">
-                Return to your session
-              </a>
-            </div>
+            <a className="btn btn--primary" href="#/focus">
+              Return to your session
+            </a>
           </>
-        ) : (
+        ) : review ? (
           <>
-            <p className="eyebrow">Suggested next</p>
-            <h2 id="next-action-title" className="hero__title" tabIndex={-1}>
+            <p className="eyebrow">Before your next session</p>
+            <h2 id="next-action-title" className="hero__title">
+              Review your session
+            </h2>
+            <p className="hero__meta">{review.label}. Mark your task done and reflect, or skip when you’re ready.</p>
+            <a className="btn btn--primary" href="#/focus">
+              Review session
+            </a>
+          </>
+        ) : guided ? (
+          <>
+            <h2 id="next-action-title" className="hero__title">
+              Make the next step small
+            </h2>
+            <StudyStepForm
+              key={route.query.get('ref') ?? 'work'}
+              initialRef={ref}
+              explicitRef={route.query.has('ref')}
+              onCancel={planning && action.kind === 'task' ? () => setPlanning(false) : undefined}
+            />
+          </>
+        ) : action.kind === 'setup' ? (
+          <>
+            <h2 id="next-action-title" className="hero__title">
+              Choose one subject to begin
+            </h2>
+            <p className="hero__meta">Then choose a topic and one small task. A few minutes is enough to start.</p>
+            <a className="btn btn--primary" href="#/subjects?new=1">
+              Add a subject
+            </a>
+          </>
+        ) : action.kind === 'task' ? (
+          <>
+            <p className="eyebrow">Your next small task</p>
+            <h2 id="next-action-title" className="hero__title">
               {action.title}
             </h2>
-            <p className="hero__meta">
-              {action.meta.join(' · ')}
-              <span className="hero__reason"> — {action.reason}</span>
-            </p>
+            <p className="hero__meta">{action.meta.join(' · ')}</p>
             <div className="button-row">
-              {action.kind === 'setup' ? (
-                <a className="btn btn--primary btn--large" href="#/subjects?new=1">
-                  Add a subject
-                </a>
-              ) : (
+              <button type="button" className="btn btn--primary btn--large" onClick={() => startSession({ task: action.task })}>
+                <Play size={18} aria-hidden="true" />
+                Start studying
+              </button>
+              {alternatives.length > 0 && (
                 <button
                   type="button"
-                  className="btn btn--primary btn--large"
-                  onClick={() =>
-                    action.kind === 'task'
-                      ? startSession({ task: action.task })
-                      : startSession({ ref: action.ref, minutes: action.minutes, title: action.title.replace(/^(Continue|Start) /, '') })
-                  }
+                  className="btn btn--secondary"
+                  aria-expanded={choosing}
+                  aria-controls="next-choices"
+                  onClick={() => setChoosing(!choosing)}
                 >
-                  <Play size={18} aria-hidden="true" />
-                  Start studying
-                </button>
-              )}
-              {alternatives.length > 0 && (
-                <button type="button" className="btn btn--secondary" aria-expanded={choosing} aria-controls="next-choices" onClick={() => setChoosing((c) => !c)}>
-                  Choose something else
+                  Choose another task
                 </button>
               )}
             </div>
-            {action.kind === 'task' && action.task.steps[0] && (
+            {action.task.steps.some((s) => !s.done) && (
               <p className="hero__first-step">
                 <span className="label">First step: </span>
-                {action.task.steps.find((s) => !s.done)?.text ?? action.task.steps[0].text}
+                {action.task.steps.find((s) => !s.done)?.text}
               </p>
             )}
+            {data.subjects.length > 0 && (
+              <button type="button" className="btn btn--ghost" onClick={() => setPlanning(true)}>
+                Choose a subject or topic
+              </button>
+            )}
             <div id="next-choices" hidden={!choosing}>
-              {choosing && (
-                <ul className="choice-list" aria-label="Other tasks">
-                  {alternatives.map((t) => (
-                    <li key={t.id}>
-                      <button
-                        type="button"
-                        className="choice-list__item"
-                        onClick={() => {
-                          update((d) => ({ ...d, nextActionTaskId: t.id }));
-                          setChoosing(false);
-                          document.getElementById('next-action-title')?.focus();
-                        }}
-                      >
-                        <span className="choice-list__title">{t.title}</span>
-                        <span className="choice-list__meta">
-                          {[`${t.durationMin} min`, contextLabel(data, t.subjectId, t.topicId), relativeDay(t.dueDate)].filter(Boolean).join(' · ')}
-                        </span>
-                      </button>
-                    </li>
-                  ))}
-                  {data.nextActionTaskId && (
-                    <li>
-                      <button
-                        type="button"
-                        className="choice-list__item"
-                        onClick={() => {
-                          update((d) => ({ ...d, nextActionTaskId: null }));
-                          setChoosing(false);
-                        }}
-                      >
-                        <span className="choice-list__title">Go back to the suggestion</span>
-                      </button>
-                    </li>
-                  )}
-                  <li>
-                    <button type="button" className="choice-list__item" onClick={() => navigate('/tasks')}>
-                      <span className="choice-list__title">See all tasks</span>
+              <ul className="choice-list" aria-label="Other tasks">
+                {alternatives.map((t) => (
+                  <li key={t.id}>
+                    <button
+                      type="button"
+                      className="choice-list__item"
+                      onClick={() => {
+                        update((d) => ({
+                          ...d,
+                          nextActionTaskId: t.id,
+                          focusTopic: t.subjectId ? { subjectId: t.subjectId, topicId: t.topicId } : d.focusTopic,
+                        }));
+                        setChoosing(false);
+                      }}
+                    >
+                      <span className="choice-list__title">{t.title}</span>
+                      <span className="choice-list__meta">
+                        {t.durationMin} min · {contextLabel(data, t.subjectId, t.topicId)} · {relativeDay(t.dueDate)}
+                      </span>
                     </button>
                   </li>
-                </ul>
-              )}
+                ))}
+              </ul>
             </div>
           </>
-        )}
+        ) : null}
       </div>
-      {effective.showImagery && (
+      {effective.showImagery && !guided && (
         <div className="hero__media">
           <DecorativeImage
             name="dashboard-hero-study-desk"
             widths={[640, 1024, 1600]}
-            sizes="(max-width: 767px) 100vw, (max-width: 1199px) 45vw, 30vw"
+            sizes="(max-width: 767px) 100vw, 30vw"
             width={1600}
             height={900}
             eager
