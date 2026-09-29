@@ -6,6 +6,7 @@ import { useData } from '../state/data';
 import { useFeedback } from '../state/feedback';
 import type { Route } from '../state/router';
 import { useSettings, type Settings } from '../state/settings';
+import { useTimer } from '../state/timer';
 import { FocusSettings } from '../components/FocusSettings';
 import { ChoiceGroup, ConfirmDialog, PageHeader, Switch } from '../components/primitives';
 
@@ -13,6 +14,7 @@ export function SettingsScreen({ route }: { route: Route }) {
   const { settings, setSetting, resetSettings } = useSettings();
   const { data, update, replace, saveStatus } = useData();
   const { notify, announce } = useFeedback();
+  const { timer, discard, clearReview } = useTimer();
   const [confirmReset, setConfirmReset] = useState(false);
   const [importError, setImportError] = useState('');
   const [notificationNote, setNotificationNote] = useState('');
@@ -333,6 +335,8 @@ export function SettingsScreen({ route }: { route: Route }) {
         onCancel={() => setConfirmReset(false)}
         onConfirm={() => {
           setConfirmReset(false);
+          if (timer.status !== 'idle') discard();
+          if (timer.pendingReview) clearReview();
           safeRemove(STORAGE_KEYS.timer);
           safeRemove(STORAGE_KEYS.drafts);
           replace(emptyData());

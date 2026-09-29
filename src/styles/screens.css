@@ -58,7 +58,7 @@
   .hero__media { display: none; }
 }
 
-.area-timer .choice-grid { grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr)); }
+.area-timer .choice-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 7rem), 1fr)); }
 
 .choice-list { list-style: none; display: grid; gap: 0.375rem; margin-top: 0.25rem; }
 .choice-list__item {
@@ -157,7 +157,7 @@
   background-image: repeating-linear-gradient(135deg, rgb(32 40 36 / 0.1) 0 2px, transparent 2px 14px);
 }
 .subject-card__body { display: grid; gap: 0.125rem; padding: 0.875rem 1rem 1rem; }
-.subject-card__title { font-size: 1.0625rem; overflow-wrap: anywhere; }
+.subject-card__title { font-size: 1.0625rem; hyphens: auto; overflow-wrap: break-word; }
 .subject-card__title a { color: var(--ink); text-decoration: none; }
 .subject-card__title a::after { content: ''; position: absolute; inset: 0; }
 .subject-card__title a:hover { text-decoration: underline; }
@@ -210,3 +210,10 @@
   .focus-panel { padding: var(--space-3); }
   .focus-screen { padding: 0; }
 }
+
+/* Reflow safeguards for lists and rows. */
+.task-rows, .topic-list { grid-template-columns: minmax(0, 1fr); }
+.task-row { min-width: 0; }
+.task-row__actions { flex: 0 1 auto; min-width: 0; flex-wrap: wrap; }
+.hero__greeting, .hero__title, .timer-context, .choice-list__title { hyphens: auto; overflow-wrap: break-word; }
+.inline-add__row .input, .topic-row__rename .input { flex-basis: 8rem; }

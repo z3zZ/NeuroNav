@@ -26,7 +26,7 @@
 .journey__stage[data-state='done'] .journey__node { background: var(--accent); border-color: var(--accent); }
 .journey__stage[data-state='current'] .journey__node { border: 3px solid var(--accent); box-shadow: 0 0 0 4px var(--accent-pale); }
 .journey__stage[data-state='current'] .journey__node::after { content: ''; width: 0.625rem; height: 0.625rem; border-radius: 50%; background: var(--accent); }
-.journey__label { font-weight: 700; font-size: 0.875rem; overflow-wrap: anywhere; }
+.journey__label { font-weight: 700; font-size: 0.875rem; overflow-wrap: break-word; }
 .journey__state { font-size: 0.8125rem; color: var(--muted); }
 .journey__stage[data-state='current'] .journey__state { color: var(--accent-text); font-weight: 700; }
 .journey__next { padding: 0.875rem 1rem; border-radius: var(--radius-control); background: var(--surface-sunken); display: grid; gap: 0.625rem; }
@@ -37,7 +37,9 @@
 .journey-list__item + .journey-list__item { padding-top: 1.25rem; border-top: 1px solid var(--border); }
 .journey-list__title { font-size: 1.0625rem; }
 
-@media (max-width: 400px) {
+/* Vertical list when the card is narrow (small screens or large text). */
+.journey { container-type: inline-size; }
+@container (max-width: 22rem) {
   .journey__track { grid-template-columns: 1fr; justify-items: start; gap: 0.5rem; }
   .journey__stage { grid-template-columns: 2rem auto auto; justify-items: start; align-items: center; column-gap: 0.625rem; text-align: left; }
   .journey__stage + .journey__stage::before { display: none; }
@@ -109,3 +111,4 @@
 .note-editor .field + .field { margin-top: 0; }
 .note-editor__body { min-height: 22rem; }
 .tools-context .field + .field { margin-top: 0; }
+.card-rows, .session-list, .search-results { grid-template-columns: minmax(0, 1fr); }

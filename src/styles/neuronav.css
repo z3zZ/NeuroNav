@@ -41,7 +41,8 @@
   --space-2: 1rem;
   --space-3: 1.5rem;
   --space-4: 2rem;
-  --sidebar-width: 248px;
+  /* Grows with the chosen text size so labels never clip. */
+  --sidebar-width: clamp(248px, 15.5rem, 320px);
 
   /* Subject fallbacks, used when no photograph is shown. */
   --subject-forest: #2f4a3a;
@@ -439,7 +440,7 @@ img { max-width: 100%; }
 
 /* Medium widths: narrower sidebar. */
 @media (max-width: 1199px) {
-  :root { --sidebar-width: 208px; }
+  :root { --sidebar-width: clamp(208px, 13rem, 280px); }
   .main { padding: var(--space-3); }
   .topbar { padding: 0.75rem var(--space-3); }
   .topbar__date { display: none; }
@@ -519,3 +520,16 @@ img { max-width: 100%; }
   .nav-link[aria-current='page'] { outline: 2px solid CanvasText; }
 }
 
+
+/* ==========================================================================
+   Reflow safeguards: large text, OpenDyslexic and 400% zoom must never
+   force horizontal scrolling. Inputs default to ~20 characters wide and
+   grid/flex children default to their content width, so both are relaxed.
+   ========================================================================== */
+
+.field { min-width: 0; grid-template-columns: minmax(0, 1fr); }
+.input, .select, .textarea { min-width: 0; max-width: 100%; }
+.switch-row__text { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.page-header > div { min-width: 0; }
+/* Prefer hyphenation; break anywhere only as a last resort. */
+.page-title, .card__title, .label, .choice__label, .eyebrow, .notice__body, .brand { hyphens: auto; overflow-wrap: break-word; }
