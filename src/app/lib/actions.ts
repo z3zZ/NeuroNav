@@ -24,11 +24,12 @@ type D = AppData;
 
 export type SubjectInput = Pick<Subject, 'name' | 'examDate' | 'difficulty' | 'energyDrain' | 'image'> & {
   colour?: Subject['colour'];
+  id?: string;
 };
 
 export function addSubject(d: D, input: SubjectInput): [D, Subject] {
   const subject: Subject = {
-    id: uid(),
+    id: input.id ?? uid(),
     name: input.name.trim(),
     examDate: input.examDate,
     difficulty: input.difficulty,
@@ -59,6 +60,51 @@ export function deleteSubject(d: D, id: string): D {
     focusTopic: d.focusTopic?.subjectId === id ? null : d.focusTopic,
     lastActive: d.lastActive?.subjectId === id ? null : d.lastActive,
   };
+}
+
+/** What a deletion detached, so Undo can put it back without touching later edits. */
+export interface Detached {
+  tasks: { id: string; subjectId: string | null; topicId: string | null }[];
+  notes: { id: string; subjectId: string | null; topicId: string | null }[];
+  flashcards: { id: string; subjectId: string | null; topicId: string | null }[];
+}
+
+export function captureLinks(d: D, match: (x: { subjectId: string | null; topicId: string | null }) => boolean): Detached {
+  const pick = (x: { id: string; subjectId: string | null; topicId: string | null }) => ({ id: x.id, subjectId: x.subjectId, topicId: x.topicId });
+  return {
+    tasks: d.tasks.filter(match).map(pick),
+    notes: d.notes.filter(match).map(pick),
+    flashcards: d.flashcards.filter(match).map(pick),
+  };
+}
+
+function relink(d: D, links: Detached): D {
+  const apply = <T extends { id: string; subjectId: string | null; topicId: string | null }>(list: T[], saved: Detached['tasks']) =>
+    list.map((x) => {
+      const link = saved.find((l) => l.id === x.id);
+      return link ? { ...x, subjectId: link.subjectId, topicId: link.topicId } : x;
+    });
+  return { ...d, tasks: apply(d.tasks, links.tasks), notes: apply(d.notes, links.notes), flashcards: apply(d.flashcards, links.flashcards) };
+}
+
+export function restoreSubject(d: D, subject: Subject, index: number, links: Detached): D {
+  if (d.subjects.some((s) => s.id === subject.id)) return d;
+  const subjects = [...d.subjects];
+  subjects.splice(Math.min(index, subjects.length), 0, subject);
+  return relink({ ...d, subjects }, links);
+}
+
+export function restoreTopic(d: D, subjectId: string, topic: Subject['topics'][number], index: number, links: Detached): D {
+  const next = {
+    ...d,
+    subjects: d.subjects.map((s) => {
+      if (s.id !== subjectId || s.topics.some((t) => t.id === topic.id)) return s;
+      const topics = [...s.topics];
+      topics.splice(Math.min(index, topics.length), 0, topic);
+      return { ...s, topics };
+    }),
+  };
+  return relink(next, links);
 }
 
 export function addTopic(d: D, subjectId: string, name: string): D {

@@ -180,6 +180,12 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     [commit],
   );
 
+  // Persist a recovered (interrupted) session straight away so a second
+  // refresh doesn't recompute it from stale timestamps.
+  useEffect(() => {
+    if (timerRef.current.interrupted) writeJSON(STORAGE_KEYS.timer, timerRef.current);
+  }, []);
+
   // Heartbeat while running so an interrupted session knows when it stopped.
   useEffect(() => {
     if (timer.status !== 'running') return;

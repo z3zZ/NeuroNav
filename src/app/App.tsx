@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { AppShell, NAV_ITEMS } from './components/AppShell';
 import { PageHeader } from './components/primitives';
-import { StudyPlanEnhanced } from './components/study-plan-enhanced';
 import { DataProvider, useData } from './state/data';
 import { FeedbackProvider } from './state/feedback';
 import { navigate, useRoute, type Route } from './state/router';
@@ -9,9 +8,13 @@ import { SettingsProvider } from './state/settings';
 import { TimerProvider } from './state/timer';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { SetupScreen } from './screens/SetupScreen';
+import { FocusScreen } from './screens/FocusScreen';
+import { SubjectDetailScreen, SubjectsScreen } from './screens/SubjectsScreen';
+import { TasksScreen } from './screens/TasksScreen';
+import { WorkScreen } from './screens/WorkScreen';
 
 // Routes are added to the navigation only once their screens exist.
-const AVAILABLE = ['/work', '/settings'];
+const AVAILABLE = ['/work', '/subjects', '/tasks', '/settings'];
 const navItems = NAV_ITEMS.filter((item) => AVAILABLE.includes(item.path));
 
 function NotFound() {
@@ -25,23 +28,18 @@ function NotFound() {
   );
 }
 
-/** Temporary bridge: the original plan view, fed from the new data store. */
-function LegacyPlan() {
-  const { data } = useData();
-  return (
-    <>
-      <PageHeader title="Work" hideTitle />
-      <div className="legacy-surface">
-        <StudyPlanEnhanced data={{ ...data.profile, subjects: data.subjects }} onReset={() => navigate("/settings")} />
-      </div>
-    </>
-  );
-}
-
 function Screen({ route }: { route: Route }) {
   switch (route.name) {
     case 'work':
-      return <LegacyPlan />;
+      return <WorkScreen />;
+    case 'tasks':
+      return <TasksScreen />;
+    case 'subjects':
+      return <SubjectsScreen route={route} />;
+    case 'subject':
+      return <SubjectDetailScreen id={route.id ?? ''} />;
+    case 'focus':
+      return <FocusScreen />;
     case 'settings':
       return <SettingsScreen route={route} />;
     default:

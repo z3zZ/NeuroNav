@@ -279,7 +279,7 @@ img { max-width: 100%; }
 .choice:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
 
 .checkbox { display: inline-flex; align-items: center; gap: 0.625rem; min-height: 44px; cursor: pointer; }
-.checkbox input, .check-input { width: 1.375rem; height: 1.375rem; accent-color: var(--accent); flex: none; margin: 0; cursor: pointer; }
+.checkbox input, .check-input { width: 1.5rem; height: 1.5rem; accent-color: var(--accent); flex: none; margin: 0; cursor: pointer; }
 
 .range { width: 100%; accent-color: var(--accent); min-height: 44px; }
 
@@ -519,5 +519,3 @@ img { max-width: 100%; }
   .nav-link[aria-current='page'] { outline: 2px solid CanvasText; }
 }
 
-/* Temporary: the original plan view uses fixed light colours. */
-.legacy-surface { color-scheme: light; color: #202824; background: #f5f3ed; border-radius: var(--radius-card); }
