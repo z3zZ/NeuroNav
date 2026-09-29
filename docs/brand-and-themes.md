@@ -44,3 +44,11 @@ Use case: photorealistic-natural. Asset type: original wide background photograp
 ## Validation
 
 `npm run build` and all 26 Playwright checks passed at desktop and mobile sizes. Coverage includes all seven themes, reload persistence, keyboard selection, background overrides, existing settings preservation, and the full study/revision regression suite. Theme checks measure text contrast and run axe on Settings and Work for every preset; both monochrome themes achieve 21:1 main text contrast. Extra-large OpenDyslexic text was checked for horizontal overflow at 320px. Welcome, Work, focus and theme screens were also visually inspected. These checks are not a claim of complete WCAG conformance.
+
+## Focus and navigation refinements
+
+The focus route now uses the full content width and available viewport height below the header, including wide desktops and mobile. Photographs cover this area; the reading panel stays opaque. A lightweight native SVG contour texture (`public/assets/brand/nav-contours.svg`) adds detail to the desktop sidebar and disappears with imagery disabled, high contrast, simplified mode or forced colours. Settings uses the same simple sliders icon in navigation and the header, without the circular avatar treatment.
+
+Elapsed and countdown displays show minutes, seconds and three-digit milliseconds with timestamp-based updates every 50ms. Progress uses the unrounded elapsed fraction. Timer storage, pause/resume, breaks and review behaviour are unchanged. Settings also offers Minutes only; reduced motion hides milliseconds and uses one-second updates. The clock is not a live announcement region, so screen readers are not interrupted on every tick.
+
+Refinement validation: production build and all 28 desktop/mobile checks passed, including viewport coverage at 1920px, timer pause/reload/resume, reduced motion, display choices, 320px reflow and the existing revision suite.

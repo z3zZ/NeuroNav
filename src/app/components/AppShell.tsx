@@ -9,7 +9,7 @@ import {
   Menu,
   Route as RouteIcon,
   Search,
-  Settings as SettingsIcon,
+  SlidersHorizontal as SettingsIcon,
   StickyNote,
   X,
 } from 'lucide-react';
@@ -49,12 +49,7 @@ function NavList({ route, items, onNavigate }: { route: Route; items: NavItem[];
     <ul className="nav-list">
       {items.map(({ path, label, icon: Icon, routes }) => (
         <li key={path}>
-          <a
-            className="nav-link"
-            href={`#${path}`}
-            aria-current={routes.includes(route.name) ? 'page' : undefined}
-            onClick={onNavigate}
-          >
+          <a className="nav-link" href={`#${path}`} aria-current={routes.includes(route.name) ? 'page' : undefined} onClick={onNavigate}>
             <Icon size={20} aria-hidden="true" />
             {label}
           </a>
@@ -105,7 +100,7 @@ export function AppShell({
   const { data } = useData();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
-  const [query, setQuery] = useState(route.name === 'search' ? route.query.get('q') ?? '' : '');
+  const [query, setQuery] = useState(route.name === 'search' ? (route.query.get('q') ?? '') : '');
 
   useEffect(() => {
     if (route.name === 'search') setQuery(route.query.get('q') ?? '');
@@ -127,14 +122,16 @@ export function AppShell({
     return () => document.removeEventListener('keydown', onKey);
   }, [menuOpen]);
 
-  const initial = data.profile.name.trim().charAt(0).toUpperCase();
-
   return (
     <div className="shell">
-      <a className="skip-link" href="#main-content" onClick={(e) => {
-        e.preventDefault();
-        document.getElementById('main-content')?.focus();
-      }}>
+      <a
+        className="skip-link"
+        href="#main-content"
+        onClick={(e) => {
+          e.preventDefault();
+          document.getElementById('main-content')?.focus();
+        }}
+      >
         Skip to main content
       </a>
 
@@ -155,41 +152,45 @@ export function AppShell({
             <BrandMark />
             NeuroNav
           </a>
-          {showSearch && <form
-            className="search-form"
-            role="search"
-            onSubmit={(e) => {
-              e.preventDefault();
-              navigate(`/search?q=${encodeURIComponent(query.trim())}`);
-            }}
-          >
-            <label htmlFor="global-search" className="visually-hidden">
-              Search subjects, tasks, notes and flashcards
-            </label>
-            <Search className="search-form__icon" size={18} aria-hidden="true" />
-            <input
-              id="global-search"
-              className="input"
-              type="search"
-              placeholder="Search your work"
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                if (route.name === 'search') {
-                  window.history.replaceState(null, '', `#/search?q=${encodeURIComponent(e.target.value)}`);
-                  window.dispatchEvent(new HashChangeEvent('hashchange'));
-                }
+          {showSearch && (
+            <form
+              className="search-form"
+              role="search"
+              onSubmit={(e) => {
+                e.preventDefault();
+                navigate(`/search?q=${encodeURIComponent(query.trim())}`);
               }}
-            />
-          </form>}
+            >
+              <label htmlFor="global-search" className="visually-hidden">
+                Search subjects, tasks, notes and flashcards
+              </label>
+              <Search className="search-form__icon" size={18} aria-hidden="true" />
+              <input
+                id="global-search"
+                className="input"
+                type="search"
+                placeholder="Search your work"
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  if (route.name === 'search') {
+                    window.history.replaceState(null, '', `#/search?q=${encodeURIComponent(e.target.value)}`);
+                    window.dispatchEvent(new HashChangeEvent('hashchange'));
+                  }
+                }}
+              />
+            </form>
+          )}
           <div className="topbar__meta">
             <SaveStatus />
             <span className="topbar__date">{dateFormat.format(new Date())}</span>
-            <a className="account-link" href="#/settings" aria-label={`Settings and profile${data.profile.name ? ` for ${data.profile.name}` : ''}`}>
-              <span className="avatar" aria-hidden="true">
-                {initial || <SettingsIcon size={16} />}
-              </span>
-              <span className="account-link__name">{data.profile.name || 'Settings'}</span>
+            <a
+              className="account-link"
+              href="#/settings"
+              aria-label={`Settings and profile${data.profile.name ? ` for ${data.profile.name}` : ''}`}
+            >
+              <SettingsIcon size={20} strokeWidth={1.75} aria-hidden="true" />
+              <span className="account-link__name">Settings</span>
             </a>
           </div>
           <button
@@ -208,7 +209,7 @@ export function AppShell({
           <NavList route={route} items={items} onNavigate={() => setMenuOpen(false)} />
         </nav>
 
-        <main id="main-content" className="main" tabIndex={-1}>
+        <main id="main-content" className={`main${route.name === 'focus' ? ' main--focus' : ''}`} tabIndex={-1}>
           {children}
         </main>
       </div>

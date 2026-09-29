@@ -30,7 +30,10 @@ export function useStartSession() {
     const subjectId = task?.subjectId ?? ref?.subjectId ?? null;
     const topicId = task?.topicId ?? ref?.topicId ?? null;
     const label = task?.title ?? target.title ?? (contextLabel(data, subjectId, topicId) || 'Focus session');
-    start({ taskId: task?.id ?? null, subjectId, topicId, label }, target.minutes ?? task?.durationMin ?? sessionMinutes(data.profile.sessionLength));
+    start(
+      { taskId: task?.id ?? null, subjectId, topicId, label },
+      target.minutes ?? task?.durationMin ?? sessionMinutes(data.profile.sessionLength),
+    );
     navigate('/focus');
   };
 }
@@ -43,31 +46,36 @@ export function timerStatusText(t: TimerData): string {
 }
 
 export function TimerReadout({ timer, large = false }: { timer: TimerData; large?: boolean }) {
-  const { settings } = useSettings();
+  const { settings, effective } = useSettings();
   const clock = settings.timerDisplay === 'clock';
-  const now = useNow(timer.status === 'running', clock ? 1000 : 15_000);
+  const minutesOnly = settings.timerDisplay === 'minutes';
+  const milliseconds = !minutesOnly && !effective.reducedMotion;
+  const now = useNow(timer.status === 'running', milliseconds ? 50 : 1000);
   const elapsed = elapsedMs(timer, now);
   const planned = timer.plannedMs;
-  const pct = Math.min(100, Math.round((elapsed / planned) * 100));
+  const pct = Math.min(100, (elapsed / planned) * 100);
   const doneMin = Math.floor(elapsed / 60_000);
   const plannedMin = Math.round(planned / 60_000);
   const left = Math.max(0, planned - elapsed);
-  const mm = String(Math.floor(left / 60_000)).padStart(2, '0');
-  const ss = String(Math.floor((left % 60_000) / 1000)).padStart(2, '0');
+  const shown = Math.max(0, clock ? left : elapsed);
+  const mm = String(Math.floor(shown / 60_000)).padStart(2, '0');
+  const ss = String(Math.floor((shown % 60_000) / 1000)).padStart(2, '0');
+  const ms = String(Math.floor(shown % 1000)).padStart(3, '0');
   const phaseWord = timer.phase === 'break' ? 'break' : 'focus';
 
   return (
     <div className={`timer-readout${large ? ' timer-readout--large' : ''}`}>
-      {clock ? (
-        <p className="timer-readout__time">
-          <span aria-hidden="true">
+      {!minutesOnly ? (
+        <p className="timer-readout__time" role="timer" aria-live="off">
+          <span className="timer-readout__digits" aria-hidden="true">
             {mm}:{ss}
+            {milliseconds && <span className="timer-readout__fraction">.{ms}</span>}
           </span>
           <span className="visually-hidden">
-            {Math.ceil(left / 60_000)} minutes of {phaseWord} left
+            {Number(mm)} minutes {Number(ss)} seconds of {phaseWord} {clock ? 'left' : 'completed'}
           </span>
           <span className="timer-readout__unit" aria-hidden="true">
-            left
+            {clock ? 'left' : `of ${plannedMin} min`}
           </span>
         </p>
       ) : (
@@ -99,7 +107,9 @@ export function TimerControls({ onFinished }: { onFinished?: () => void }) {
   if (timer.status === 'finished') {
     return (
       <div className="end-prompt" role="group" aria-label="What next?">
-        <p className="end-prompt__title">{timer.phase === 'focus' ? 'That block is done. What next?' : 'Break over. Ready when you are.'}</p>
+        <p className="end-prompt__title">
+          {timer.phase === 'focus' ? 'That block is done. What next?' : 'Break over. Ready when you are.'}
+        </p>
         <div className="button-row">
           {timer.phase === 'focus' ? (
             <>

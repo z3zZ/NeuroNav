@@ -14,7 +14,7 @@ export interface Settings {
   imagery: boolean;
   sound: boolean;
   notifications: boolean;
-  timerDisplay: 'calm' | 'clock';
+  timerDisplay: 'calm' | 'clock' | 'minutes';
   breakMin: number;
 }
 
@@ -52,7 +52,7 @@ export function normaliseSettings(raw: unknown): Settings | null {
     imagery: asBoolean(raw.imagery, d.imagery),
     sound: asBoolean(raw.sound, d.sound),
     notifications: asBoolean(raw.notifications, d.notifications),
-    timerDisplay: oneOf(raw.timerDisplay, ['calm', 'clock'] as const, d.timerDisplay),
+    timerDisplay: oneOf(raw.timerDisplay, ['calm', 'clock', 'minutes'] as const, d.timerDisplay),
     breakMin: Math.round(asNumber(raw.breakMin, d.breakMin, 1, 60)),
   };
 }

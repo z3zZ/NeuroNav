@@ -173,10 +173,12 @@ export function SettingsScreen({ route }: { route: Route }) {
                 value={settings.timerDisplay}
                 onChange={set('timerDisplay')}
                 options={[
-                  { value: 'calm', label: 'Calm', hint: 'Minutes done, no seconds' },
-                  { value: 'clock', label: 'Countdown', hint: 'Minutes and seconds left' },
+                  { value: 'calm', label: 'Elapsed', hint: 'Minutes, seconds and milliseconds done' },
+                  { value: 'clock', label: 'Countdown', hint: 'Minutes, seconds and milliseconds left' },
+                  { value: 'minutes', label: 'Minutes only', hint: 'A quieter view without seconds' },
                 ]}
               />
+              <p className="hint">Reduced motion hides milliseconds and updates the clock once a second.</p>
               <div className="field">
                 <label className="label" htmlFor="break-length">
                   Default break length (minutes)
