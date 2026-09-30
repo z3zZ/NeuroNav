@@ -1,0 +1,34 @@
+/* Static decorative layers sit behind content, never over controls or photographs. */
+:root {
+  --texture-contours: url('/assets/brand/texture-contours.svg');
+  --texture-dots: url('/assets/brand/texture-dots.svg');
+  --texture-linen: url('/assets/brand/texture-linen.svg');
+  --texture-grid: url('/assets/brand/texture-grid.svg');
+  --card-pattern: var(--texture-contours);
+  --texture-opacity: 0.035;
+}
+:root[data-texture-strength='balanced'] { --texture-opacity: 0.065; }
+:root[data-texture-strength='defined'] { --texture-opacity: 0.1; }
+:root[data-card-texture='dots'] { --card-pattern: var(--texture-dots); }
+:root[data-card-texture='linen'] { --card-pattern: var(--texture-linen); }
+:root[data-card-texture='grid'] { --card-pattern: var(--texture-grid); }
+:where(.card:not(.hero), .hero__content, .subject-card, .note-card, .task-row, .practice, .card-row) { position: relative; isolation: isolate; }
+:where(.card:not(.hero), .hero__content, .subject-card, .note-card, .task-row, .practice, .card-row)::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  border-radius: inherit; background-image: var(--card-pattern); background-repeat: repeat;
+  opacity: var(--texture-opacity);
+}
+:root[data-theme='dark'] :where(.card, .hero__content, .subject-card, .note-card, .task-row, .practice, .card-row)::before { filter: invert(1); }
+:root[data-card-texture='mixed'] :where(.card, .hero__content, .subject-card, .note-card, .task-row, .practice, .card-row) { --card-pattern: var(--texture-contours); }
+:root[data-card-texture='mixed'] :where(.card:nth-child(4n + 2), .area-plan, .subject-card, .texture-preview--1) { --card-pattern: var(--texture-dots); }
+:root[data-card-texture='mixed'] :where(.card:nth-child(4n + 3), .area-timer, .note-card, .practice, .texture-preview--2) { --card-pattern: var(--texture-linen); }
+:root[data-card-texture='mixed'] :where(.card:nth-child(4n + 4), .area-journey, .task-row, .card-row) { --card-pattern: var(--texture-grid); }
+:root[data-card-texture='off'] :where(.card, .hero__content, .subject-card, .note-card, .task-row, .practice, .card-row)::before { display: none; }
+.settings-textures { display: grid; gap: 1.25rem; margin-bottom: var(--space-3); }
+.texture-previews { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: 0.75rem; }
+.texture-preview { min-height: 8rem; display: grid; align-content: center; gap: 0.5rem; background-color: var(--surface); }
+@media (forced-colors: active), print {
+  :where(.card, .hero__content, .subject-card, .note-card, .task-row, .practice, .card-row)::before { display: none; }
+}
+
+.card-row { background-color: var(--surface); }

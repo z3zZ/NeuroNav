@@ -8,6 +8,7 @@ import type { Route } from '../state/router';
 import { useSettings, type Settings } from '../state/settings';
 import { useTimer } from '../state/timer';
 import { ThemePicker } from '../components/ThemePicker';
+import { TexturePicker } from '../components/TexturePicker';
 import { FocusSettings } from '../components/FocusSettings';
 import { ChoiceGroup, ConfirmDialog, PageHeader, Switch } from '../components/primitives';
 
@@ -77,6 +78,7 @@ export function SettingsScreen({ route }: { route: Route }) {
     <>
       <PageHeader title="Settings" intro="Changes apply straight away and are saved in this browser." />
       <ThemePicker />
+      <TexturePicker />
       <div className="settings-grid">
         <section className="card settings-section" aria-labelledby="a11y-heading">
           <h2 id="a11y-heading" className="card__title">

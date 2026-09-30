@@ -10,6 +10,8 @@ export interface Settings {
   motion: 'system' | 'reduced' | 'full';
   theme: 'system' | 'light' | 'dark' | 'ocean' | 'ink-light' | 'ink-dark';
   background: 'auto' | 'daylight' | 'nightfall' | 'original';
+  cardTexture: 'mixed' | 'contours' | 'dots' | 'linen' | 'grid' | 'off';
+  textureStrength: 'subtle' | 'balanced' | 'defined';
   simplified: boolean;
   imagery: boolean;
   sound: boolean;
@@ -27,6 +29,8 @@ export const DEFAULT_SETTINGS: Settings = {
   motion: 'system',
   theme: 'system',
   background: 'auto',
+  cardTexture: 'mixed',
+  textureStrength: 'subtle',
   simplified: false,
   imagery: true,
   // Silence by default; the learner opts in.
@@ -48,6 +52,8 @@ export function normaliseSettings(raw: unknown): Settings | null {
     motion: oneOf(raw.motion, ['system', 'reduced', 'full'] as const, d.motion),
     theme: oneOf(raw.theme, ['system', 'light', 'dark', 'ocean', 'ink-light', 'ink-dark'] as const, d.theme),
     background: oneOf(raw.background, ['auto', 'daylight', 'nightfall', 'original'] as const, d.background),
+    cardTexture: oneOf(raw.cardTexture, ['mixed', 'contours', 'dots', 'linen', 'grid', 'off'] as const, d.cardTexture),
+    textureStrength: oneOf(raw.textureStrength, ['subtle', 'balanced', 'defined'] as const, d.textureStrength),
     simplified: asBoolean(raw.simplified, d.simplified),
     imagery: asBoolean(raw.imagery, d.imagery),
     sound: asBoolean(raw.sound, d.sound),
@@ -142,6 +148,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     root.font = settings.font;
     root.size = settings.fontSize;
     root.spacing = settings.spacing;
+    root.cardTexture = effective.highContrast || settings.simplified ? 'off' : settings.cardTexture;
+    root.textureStrength = settings.textureStrength;
     const icon = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
     if (icon)
       icon.href = `${import.meta.env.BASE_URL}${

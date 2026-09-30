@@ -22,6 +22,8 @@
         if (s.font) r.font = s.font;
         if (s.fontSize) r.size = s.fontSize;
         if (s.spacing) r.spacing = s.spacing;
+        r.cardTexture = r.contrast === 'high' || s.simplified ? 'off' : ['mixed', 'contours', 'dots', 'linen', 'grid', 'off'].includes(s.cardTexture) ? s.cardTexture : 'mixed';
+        r.textureStrength = ['subtle', 'balanced', 'defined'].includes(s.textureStrength) ? s.textureStrength : 'subtle';
       })();
     </script>
   </head>

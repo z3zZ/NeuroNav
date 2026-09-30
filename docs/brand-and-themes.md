@@ -52,3 +52,11 @@ The focus route now uses the full content width and available viewport height be
 Elapsed and countdown displays show minutes, seconds and three-digit milliseconds with timestamp-based updates every 50ms. Progress uses the unrounded elapsed fraction. Timer storage, pause/resume, breaks and review behaviour are unchanged. Settings also offers Minutes only; reduced motion hides milliseconds and uses one-second updates. The clock is not a live announcement region, so screen readers are not interrupted on every tick.
 
 Refinement validation: production build and all 28 desktop/mobile checks passed, including viewport coverage at 1920px, timer pause/reload/resume, reduced motion, display choices, 320px reflow and the existing revision suite.
+
+## Card textures
+
+Settings → Card textures offers Varied cards, Contours, Dot paper, Linen, Graph paper and None, with Subtle, Balanced and Defined strengths. Varied cards at Subtle strength is the default. The mixed option assigns different static patterns to card types; choosing one pattern applies it consistently. Four small native SVG assets live at `public/assets/brand/texture-{contours,dots,linen,grid}.svg`.
+
+Textures cover dashboard, subject, task, note, flashcard, focus and settings card surfaces. They sit behind content, leave inputs and photographs untouched, adapt to dark themes, and do not intercept clicks. They are independently configurable from photographs and the sidebar texture. High-contrast, simplified, forced-colour and print views hide them. Style and strength remain saved so leaving an accessibility mode restores the user's choice. Older settings receive defaults without replacing study data or unrelated preferences.
+
+Card texture validation: production build and all 30 desktop/mobile checks passed. Tests cover every texture and strength, reload persistence, unchanged study data, high-contrast/simplified/forced-colour overrides, 320px layout and the existing revision flows. Light and dark previews were visually checked.
